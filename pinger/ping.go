@@ -17,7 +17,7 @@ func IsValidateAddr(addr string) bool {
 	return false
 }
 
-func GetGateway(addr string) string {
+func GetBaseIP(addr string) string {
 	strs := strings.Split(addr, ".")
 	strs[len(strs)-1] = "1"
 	return strings.Join(strs, ".")
@@ -70,8 +70,13 @@ func SinglePing(addr string, sip *ScanIP) {
 	}
 
 	pinger.OnRecv = func(pkt *ping.Packet) {
-		fmt.Printf("%d bytes from %s: icmp_seq=%d time=%vms \n",
-			pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt.Milliseconds())
+		hostname, _ := net.LookupAddr(addr)
+		name := "Sorry, couldn't find :("
+		if len(hostname) != 0 {
+			name = hostname[0]
+		}
+		fmt.Printf("%d bytes from %s: icmp_seq=%d time=%vms     	|     hostname= %s \n",
+			pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt.Milliseconds(), name)
 	}
 	pinger.Count = 1
 	pinger.Timeout = time.Duration(1100 * time.Millisecond)
@@ -101,11 +106,23 @@ func PingSearch(addr string) error {
 		return fmt.Errorf("invalid addr: %s", addr)
 	}
 
-	ip := GetGateway(addr)
+	ip := GetBaseIP(addr)
 	newscan := NewScanIP(0, ip)
 	for newscan.Index() < 255 {
 		go newscan.Next()
 	}
+
+	/*
+		g.Go(func() error {
+			defer p.Stop()
+			return p.recvICMP(conn, recv)
+		})
+
+		g.Go(func() error {
+			defer p.Stop()
+			return p.runLoop(conn, recv)
+		})
+	*/
 
 	newscan.Finish()
 	return nil

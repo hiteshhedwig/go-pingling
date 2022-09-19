@@ -2,6 +2,7 @@ package pinger
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -79,13 +80,33 @@ func SinglePing(addr string, sip *ScanIP) {
 
 }
 
+func GetLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	for _, address := range addrs {
+		// check the address type and if it is not a loopback the display it
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
+
 func PingSearch(addr string) error {
+	if !IsValidateAddr(addr) {
+		return fmt.Errorf("invalid addr: %s", addr)
+	}
 
 	ip := GetGateway(addr)
 	newscan := NewScanIP(0, ip)
 	for newscan.Index() < 255 {
 		go newscan.Next()
 	}
+
 	newscan.Finish()
 	return nil
 }

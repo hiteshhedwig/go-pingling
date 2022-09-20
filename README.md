@@ -3,5 +3,5 @@
 
 To discover IP in the current network
 ```
-pingline search 
+pingling search 
 ```

@@ -56,14 +56,12 @@ func PingInit(addr string) error {
 func SinglePing(addr string, sip *ScanIP) {
 
 	defer sip.wg.Done()
-
 	if sip.idx >= 255 {
 		return
 	}
 
 	sip.idx += 1
 
-	//fmt.Println("addrr ", addr)
 	pinger, err := ping.NewPinger(addr)
 	if err != nil {
 		fmt.Printf("error creating ping: %v", err)
@@ -108,8 +106,11 @@ func PingSearch(addr string) error {
 
 	ip := GetBaseIP(addr)
 	newscan := NewScanIP(0, ip)
-	for newscan.Index() < 255 {
-		go newscan.Next()
+	idx := 0
+	for idx < 255 {
+		idx += 1
+		//fmt.Println("Trying ", idx)
+		go newscan.Next(idx)
 	}
 
 	/*

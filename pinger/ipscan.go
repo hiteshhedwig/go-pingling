@@ -26,8 +26,8 @@ func (s ScanIP) Addr() string {
 	return s.addr
 }
 
-func (s *ScanIP) Next() {
-	ip := s.FormIPAddr()
+func (s *ScanIP) Next(idx int) {
+	ip := s.FormIPAddr(idx)
 	s.wg.Add(1)
 	go SinglePing(ip, s)
 }
@@ -40,9 +40,10 @@ func (s *ScanIP) Finish() {
 	s.wg.Wait()
 }
 
-func (s *ScanIP) FormIPAddr() string {
+func (s *ScanIP) FormIPAddr(idx int) string {
 	sample := strings.Split(s.addr, ".")
 	sample = sample[:len(sample)-1]
-	addr := fmt.Sprintf("%s.%d", strings.Join(sample, "."), s.idx)
+	addr := fmt.Sprintf("%s.%d", strings.Join(sample, "."), idx)
+	s.idx = idx
 	return addr
 }
